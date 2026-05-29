@@ -1,4 +1,6 @@
-![Logo](sprites-override/ui/logo.png)
+<p align="center">
+<img src=sprites-override/ui/logo.png alt="Project Logo">
+  
 # Cursed Bundles
 [![Badge Discord]][Discord]
 
