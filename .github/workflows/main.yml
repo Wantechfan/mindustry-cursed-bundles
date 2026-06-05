@@ -13,5 +13,4 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           username: "Cursed Bundles"  # Write your custom name here
-          avatar_url: "https://github.com/Wantechfan/mindustry-cursed-bundles/blob/main/icon.png" # Optional image link
           content: "**${{ github.actor }}** pushed a commit to **${{ github.repository }}**!\nCommit message: ${{ github.event.head_commit.message }}"
