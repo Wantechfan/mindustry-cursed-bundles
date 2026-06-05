@@ -1,0 +1,17 @@
+name: Discord Custom Notification
+
+on:
+  push:
+    branches: [ main ]  # Triggers when code is pushed to the main branch
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send custom Discord message
+        uses: chase-roohms/discord-notify@v1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: "Cursed Bundles"  # Write your custom name here
+          avatar_url: "https://github.com/Wantechfan/mindustry-cursed-bundles/blob/main/icon.png" # Optional image link
+          content: "🚀 **${{ github.actor }}** pushed a commit to **${{ github.repository }}**!\nCommit message: ${{ github.event.head_commit.message }}"
