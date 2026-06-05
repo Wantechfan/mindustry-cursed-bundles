@@ -13,4 +13,4 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           username: "Cursed Bundles"  # Write your custom name here
-          content: "**${{ github.actor }}** pushed a commit to **${{ github.repository }}**!\nCommit message: ${{ github.event.head_commit.message }}"
+          content: "**${{ github.actor }}** pushed a commit to **${{ github.repository }}**!\nCommit Lonk: https://github.com/Wantechfan/mindustry-cursed-bundles/commit/${{ github.sha }}\nCommit message: ${{ github.event.head_commit.message }}"
