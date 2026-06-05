@@ -11,4 +11,4 @@ jobs:
         uses: chase-roohms/discord-notify@v1
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: "**${{ github.actor }}** forked **${{ github.repository }}**!\nLink: ${{ github.event.forkee.html_url }}\n-# <@1393198962101456949> we got a fork."
+          content: "### **${{ github.actor }}** forked **${{ github.repository }}**!\nLink: ${{ github.event.forkee.html_url }}\n-# <@1393198962101456949> we got a fork."
