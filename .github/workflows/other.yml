@@ -1,0 +1,32 @@
+name: Notify Discord on New Star
+
+on:
+  watch:
+    types: [started]
+
+jobs:
+  discord-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Message
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          USERNAME="${{ github.event.sender.login }}"
+          REPO="${{ github.repository }}"
+          URL="https://github.com{{ github.repository }}"
+          
+          # Construct JSON payload for Discord
+          PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "Someone Starred A Repo!",
+              "description": "**$USERNAME** just starred [$REPO]($URL)!",
+              "color": 16776960
+            }]
+          }
+          EOF
+          )
+          
+          # Send the POST request to Discord
+          curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" $DISCORD_WEBHOOK
