@@ -1,0 +1,15 @@
+name: Notify Discord on New Issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send custom Discord message
+        uses: chase-roohms/discord-notify@v1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: "### ${{ github.actor }} issued ${{ github.repository }}!\nMessage: ${{ github.event.issue.body }}\nLink: ${{ github.event.issue.html_url }}"
