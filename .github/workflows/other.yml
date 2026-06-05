@@ -13,22 +13,4 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           username: "Cursed Bundles"  # Write your custom name here
-          content: |
-            USERNAME="${{ github.event.sender.login }}"
-            REPO="cursed-bundles"
-            URL="https://github.com/Wantechfan/mindustry-cursed-bundles"
-          
-            # Construct JSON payload for Discord
-            PAYLOAD=$(cat <<EOF
-            {
-              "embeds": [{
-                "title": "Someone Starred A Repo!",
-                "description": "**$USERNAME** just starred [$REPO]($URL)!",
-                "color": 16776960
-              }]
-            }
-            EOF
-            )
-            
-            # Send the POST request to Discord
-            curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" $DISCORD_WEBHOOK
+          content: "Damn, **$USERNAME** just starred Wantechfan/mindustry-cursed-bundles!"
