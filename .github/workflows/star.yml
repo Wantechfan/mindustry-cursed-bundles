@@ -12,5 +12,4 @@ jobs:
         uses: chase-roohms/discord-notify@v1
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          username: "Cursed Bundles"  # Write your custom name here
-          content: "Damn, **${{ github.event.sender.login }}** just starred ${{ github.repository }}!"
+          content: "Damn, **${{ github.event.sender.login }}** just starred ${{ github.repository }}! Tysm bro."
