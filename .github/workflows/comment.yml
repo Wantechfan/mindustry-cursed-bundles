@@ -1,4 +1,4 @@
-name: Notify Discord on Comments
+name: Discord Comment Notif
 
 on:
   issue_comment:
