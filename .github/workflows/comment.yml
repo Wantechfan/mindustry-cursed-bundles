@@ -12,4 +12,4 @@ jobs:
         uses: chase-roohms/discord-notify@v1
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: "### New comment on ${{ github.event.issue.pull_request && 'pull request' || 'issue' }} ${{ github.event.issue.title }}!\n**${{ github.actor }}:** ${{ github.event.issue.body }}\nLink: ${{ github.event.comment.html_url }}\n-# <@1393198962101456949> somenoe commented!"
+          content: "### New comment on ${{ github.event.issue.pull_request && 'pull request' || 'issue' }} ${{ github.event.issue.title }}!\n**${{ github.actor }}:** ${{ github.event.comment.body }}\nLink: ${{ github.event.comment.html_url }}\n-# <@1393198962101456949> somenoe commented!"
