@@ -1,4 +1,4 @@
-name: Fork Notification
+name: Discord Fork Notif
 
 on:
   fork
