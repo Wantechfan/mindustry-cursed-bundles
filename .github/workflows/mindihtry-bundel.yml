@@ -1,0 +1,52 @@
+name: Monitor External File
+
+on:
+  schedule:
+    # Runs every hour. Adjust the cron expression as needed.
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allows you to trigger the check manually
+
+jobs:
+  check-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out your repository to use cache mechanisms
+      - name: Checkout local repo
+        uses: actions/checkout@v4
+
+      # Step 2: Fetch the latest commit SHA of the specific file using GitHub API
+      - name: Fetch remote file info
+        id: remote_info
+        run: |
+          # Fetch metadata for the file from Anuken/Mindustry
+          RESPONSE=$(curl -s "https://github.com")
+          
+          # Extract the latest commit SHA, author, and commit message
+          SHA=$(echo "$RESPONSE" | jq -r '.[0].sha')
+          AUTHOR=$(echo "$RESPONSE" | jq -r '.[0].commit.author.name')
+          MESSAGE=$(echo "$RESPONSE" | jq -r '.[0].commit.message' | head -n 1)
+          
+          echo "latest_sha=$SHA" >> $GITHUB_OUTPUT
+          echo "author=$AUTHOR" >> $GITHUB_OUTPUT
+          echo "msg=$MESSAGE" >> $GITHUB_OUTPUT
+
+      # Step 3: Compare with the last known SHA using GitHub Actions Cache
+      - name: Check for updates
+        id: check_changes
+        uses: actions/cache@v4
+        with:
+          path: .last_sha
+          key: file-sha-${{ steps.remote_info.outputs.latest_sha }}
+
+      # Step 4: Send a message to Discord only if the cache was missed (meaning the SHA changed)
+      - name: Send Discord Notification
+        if: steps.check_changes.outputs.cache-hit != 'true'
+        uses: chase-roohms/discord-notify@v1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: Mindihtry bundel got updated. <@1393198962101456949> Update Cursed Bundles and Sondustry asap.
+      # Step 5: Save the new SHA to the local state so the cache triggers correctly next time
+      - name: Update last known SHA
+        if: steps.check_changes.outputs.cache-hit != 'true'
+        run: echo "${{ steps.remote_info.outputs.latest_sha }}" > .last_sha
