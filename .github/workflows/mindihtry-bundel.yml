@@ -2,9 +2,8 @@ name: Monitor External File
 
 on:
   schedule:
-    # Berjalan otomatis setiap 6 jam. Anda bisa menyesuaikan jadwal cron ini.
-    - cron: '0 */6 * * *'
-  workflow_dispatch: # Memungkinkan Anda menjalankan workflow ini secara manual kapan saja
+    - cron: '0 */1 * * *'
+  workflow_dispatch:
 
 jobs:
   check-file:
