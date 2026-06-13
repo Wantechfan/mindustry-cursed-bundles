@@ -5,6 +5,9 @@ on:
     - cron: '0 */1 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   check-file:
     runs-on: ubuntu-latest
@@ -15,8 +18,7 @@ jobs:
       - name: Fetch external file metadata
         id: fetch_file
         run: |
-          # Mengambil metadata file dari GitHub API untuk memeriksa SHA/hash terbaru
-          RESPONSE=$(curl -s https://github.com)
+          RESPONSE=$(curl -sL 'https://api.github.com/repos/Anuken/Mindustry/blob/master/core/assets/bundles/bundle.properties')
           CURRENT_SHA=$(echo "$RESPONSE" | jq -r '.sha')
           
           echo "SHA Terbaru: $CURRENT_SHA"
@@ -25,7 +27,6 @@ jobs:
       - name: Read previous SHA
         id: read_sha
         run: |
-          # Membaca SHA yang disimpan dari proses sebelumnya (jika ada)
           if [ -f .github/last_sha.txt ]; then
             PREVIOUS_SHA=$(cat .github/last_sha.txt)
           else
@@ -35,21 +36,20 @@ jobs:
           echo "previous_sha=$PREVIOUS_SHA" >> $GITHUB_OUTPUT
 
       - name: Compare SHA and Update
-        if: steps:fetch_file.outputs.current_sha != steps:read_sha.outputs.previous_sha
+        if: steps.fetch_file.outputs.current_sha != steps.read_sha.outputs.previous_sha
         run: |
-          # Jika SHA berubah, simpan SHA baru ke dalam repositori
           mkdir -p .github
           echo "${{ steps.fetch_file.outputs.current_sha }}" > .github/last_sha.txt
           
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@://github.com"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .github/last_sha.txt
           git commit -m "Chore: Update monitored file SHA [skip ci]"
           git push
 
       - name: Send Discord Notification
-        if: steps:fetch_file.outputs.current_sha != steps:read_sha.outputs.previous_sha && steps:read_sha.outputs.previous_sha != ''
+        if: steps.fetch_file.outputs.current_sha != steps.read_sha.outputs.previous_sha && steps.read_sha.outputs.previous_sha != ''
         uses: chase-roohms/discord-notify@v1
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: Bundel propertis got updated, <@1393198962101456949>.
+          content: "Bundle properties got updated, <@1393198962101456949>. Time to Cursed Bundles!"
