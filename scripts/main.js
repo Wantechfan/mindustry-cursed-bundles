@@ -7,29 +7,34 @@ Events.on(ClientLoadEvent, function() {
             return;
         }
 
-        // 1. Get the absolute path to the actual .zip file on your phone
         var zipFilePath = myMod.file.absolutePath();
-        
-        // 2. Open the zip file directly using native Java
         var zipFile = new java.util.zip.ZipFile(zipFilePath);
+        
+        // Let's print out EVERYTHING inside your zip file to see its layout
+        Log.info("--- LISTING ZIP CONTENTS ---");
+        var entries = zipFile.entries();
+        while (entries.hasMoreElements()) {
+            var entry = entries.nextElement();
+            Log.info("Found file inside ZIP: '" + entry.getName() + "'");
+        }
+        Log.info("----------------------------");
+
+        // Try reading it again
         var zipEntry = zipFile.getEntry("othermodbundle.json");
 
         if (zipEntry == null) {
-            Log.err("[MyMod] 'othermodbundle.json' not found inside the zip root.");
+            Log.err("[MyMod] 'othermodbundle.json' not found inside the zip root. Check the 'Found file inside ZIP' list above to see why!");
             zipFile.close();
             return;
         }
 
-        // 3. Read the file stream directly from the zip entry
         var inputStream = zipFile.getInputStream(zipEntry);
         var scanner = new java.util.Scanner(inputStream, "UTF-8").useDelimiter("\\A");
         var jsonString = scanner.hasNext() ? scanner.next() : "";
         
-        // Clean up open streams
         inputStream.close();
         zipFile.close();
 
-        // 4. Parse and inject strings
         var json = JSON.parse(jsonString + "");
         var properties = Core.bundle.getProperties();
 
@@ -39,7 +44,7 @@ Events.on(ClientLoadEvent, function() {
             }
         }
 
-        Log.info("[MyMod] Bundle strings successfully extracted from ZipFile!");
+        Log.info("[MyMod] Bundle strings successfully extracted!");
     } catch (e) {
         Log.err("[MyMod] Native Zip Loader caught an exception: " + e);
     }
