@@ -1,6 +1,6 @@
 Events.on(ClientLoadEvent, () => {
     try {
-        // 1. Safely grab your mod context
+        // Find your mod reference securely
         let myMod = Vars.mods.list().find(m => m.mainFile && m.mainFile.path().toLowerCase().includes("cursed-bundles"));
 
         if (!myMod) {
@@ -8,11 +8,12 @@ Events.on(ClientLoadEvent, () => {
             return;
         }
 
-        // 2. Read the file data and explicitly force it to a JavaScript String primitive
-        let rawJavaString = myMod.file.child("othermodbundle.json").readString();
-        let jsonString = String(rawJavaString);
+        // Fix: Read the file strictly using Mindustry's global safe asset stream
+        // This converts the data directly into a safe String array structure
+        let lines = Core.files.internal(myMod.file.path() + "/othermodbundle.json").readString("UTF-8");
+        let jsonString = String(lines);
 
-        // 3. Parse and inject into the game bundles
+        // Parse and inject
         let json = JSON.parse(jsonString);
         let properties = Core.bundle.getProperties();
 
@@ -20,8 +21,8 @@ Events.on(ClientLoadEvent, () => {
             properties.put(key, json[key]);
         });
 
-        Log.info("[MyMod] Successfully loaded and injected bundle strings from ZipFi!");
+        Log.info("[MyMod] Bundle strings successfully loaded!");
     } catch (e) {
-        Log.err("[MyMod] Failed to read internal zip data: " + e);
+        Log.err("[MyMod] Safe bundle loader caught an exception: " + e);
     }
 });
