@@ -1,6 +1,5 @@
 Events.on(ClientLoadEvent, () => {
     try {
-        // 1. Locate your mod context safely
         let myMod = Vars.mods.list().find(m => m.mainFile && m.mainFile.path().toLowerCase().includes("cursed-bundles"));
 
         if (!myMod) {
@@ -8,12 +7,13 @@ Events.on(ClientLoadEvent, () => {
             return;
         }
 
-        // 2. Read the file content directly using the mod's virtual root file pointer
-        // Mindustry's ZipFi handles zipped contents seamlessly via readString()
-        let jsonString = myMod.file.child("othermodbundle.json").readString();
+        let jsonFile = myMod.file.child("othermodbundle.json");
 
-        if (jsonString && jsonString.trim().length() > 0) {
-            // 3. Parse JSON and inject into game strings
+        // Use direct reading safely without the Java/JS string format conflict
+        if (jsonFile != null) {
+            let jsonString = jsonFile.readString();
+            
+            // Parse it directly
             let json = JSON.parse(jsonString);
             let properties = Core.bundle.getProperties();
 
@@ -22,8 +22,6 @@ Events.on(ClientLoadEvent, () => {
             });
 
             Log.info("[MyMod] Successfully loaded and injected bundle strings from ZipFi!");
-        } else {
-            Log.err("[MyMod] The bundle file was empty or unreadable.");
         }
     } catch (e) {
         Log.err("[MyMod] Failed to read internal zip data: " + e);
