@@ -1,36 +1,30 @@
 Events.on(ClientLoadEvent, function() {
     try {
-        var modsList = Vars.mods.list();
-        var myMod = null;
-
-        for (var i = 0; i < modsList.size(); i++) {
-            var m = modsList.get(i);
-            if (m.name != null && (m.name + "").toLowerCase().indexOf("cursed-bundles") !== -1) {
-                myMod = m;
-                break;
-            }
-        }
+        // 1. Fetch the mod directly by its internal ID string.
+        // No loops, no .size(), no .get(i) to confuse the engine!
+        var myMod = Vars.mods.getMod("cursed-bundles");
 
         if (myMod == null) {
-            Log.err("[MyMod] Could not find mod entry.");
+            Log.err("[MyMod] Could not find mod by ID.");
             return;
         }
 
-        // Fix: Use Mindustry's Jval system parser directly on the file object
-        // Jval handles internal ZipFi conversion natively in Java, avoiding JS layer bugs
-        var jvalObj = arc.util.serialization.Jval.read(myMod.file.child("othermodbundle.json").readString());
+        // 2. Read the file string cleanly using an all-Java approach
+        var jsonFile = myMod.file.child("othermodbundle.json");
+        var jsonString = jsonFile.readString() + "";
+
+        // 3. Parse the JSON using a clean standard loop
+        var json = JSON.parse(jsonString);
         var properties = Core.bundle.getProperties();
 
-        // Use Jval's native keys iterator instead of JS loops
-        var keys = jvalObj.keys();
-        while(keys.hasNext()) {
-            var key = keys.next() + "";
-            var value = jvalObj.getString(key, "") + "";
-            properties.put(key, value);
+        for (var key in json) {
+            if (Object.prototype.hasOwnProperty.call(json, key)) {
+                properties.put(key + "", json[key] + "");
+            }
         }
 
-        Log.info("[MyMod] Bundle strings successfully loaded via Jval!");
+        Log.info("[MyMod] Bundle strings successfully loaded!");
     } catch (e) {
-        Log.err("[MyMod] Jval Loader caught an exception: " + e);
+        Log.err("[MyMod] Loader caught a runtime exception: " + e);
     }
 });
