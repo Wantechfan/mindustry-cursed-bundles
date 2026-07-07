@@ -56,7 +56,19 @@ Events.on(ClientLoadEvent, function() {
 
             var typeStr = parts[0];     
             var contentName = parts[1]; 
-            var fieldType = parts[2];   
+            var fieldType = parts[2];
+            
+            // Format: "mod.target-mod-id.field"
+            if (typeStr === "mod") {
+                var targetMod = Vars.mods.getMod(contentName); // Finds "Asthosus", "Exoprosopa", etc.
+                if (targetMod != null) {
+                    if (fieldType === "name") targetMod.meta.displayName = value;
+                    if (fieldType === "description") targetMod.meta.description = value;
+                    if (fieldType === "author") targetMod.meta.author = value;
+                    if (fieldType === "subtitle") targetMod.meta.subtitle = value;
+                }
+                continue; // Skip standard asset mutation
+            }
 
             if (typeStr === "item") {
                 var item = Vars.content.getByName(ContentType.item, contentName);
@@ -93,7 +105,7 @@ Events.on(ClientLoadEvent, function() {
                 if (status != null) {
                     if (fieldType === "name") status.localizedName = value;
                     if (fieldType === "description") status.description = value;
-                    if (fieldType === "details") status.details = value; // Add this line!
+                    if (fieldType === "details") status.details = value;
                 }
             }
         }
