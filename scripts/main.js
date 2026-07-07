@@ -1,6 +1,6 @@
 Events.on(ClientLoadEvent, () => {
     try {
-        // Find the mod where the mainFile path matches your folder name
+        // 1. Locate your mod context safely
         let myMod = Vars.mods.list().find(m => m.mainFile && m.mainFile.path().toLowerCase().includes("cursed-bundles"));
 
         if (!myMod) {
@@ -8,11 +8,16 @@ Events.on(ClientLoadEvent, () => {
             return;
         }
 
-        // Safe zip asset loading method
-        let jsonFile = myMod.mainFile.parent().parent().child("othermodbundle.json");
+        // 2. Open a direct input stream to the file inside the ZIP archive using the mod's classloader
+        let stream = myMod.loader.getResourceAsStream("othermodbundle.json");
 
-        if (jsonFile.exists()) {
-            let jsonString = jsonFile.readString();
+        if (stream != null) {
+            // 3. Convert the stream to a string
+            let scanner = new java.util.Scanner(stream, "UTF-8").useDelimiter("\\A");
+            let jsonString = scanner.hasNext() ? scanner.next() : "";
+            stream.close(); // Clean up memory
+
+            // 4. Parse JSON and inject into game strings
             let json = JSON.parse(jsonString);
             let properties = Core.bundle.getProperties();
 
@@ -20,11 +25,11 @@ Events.on(ClientLoadEvent, () => {
                 properties.put(key, json[key]);
             });
 
-            Log.info("[MyMod] Successfully injected external bundle strings from ZIP asset!");
+            Log.info("[MyMod] Successfully loaded and injected bundle strings from ZIP stream!");
         } else {
-            Log.err("[MyMod] File not found inside zip context registry.");
+            Log.err("[MyMod] Could not find 'othermodbundle.json' inside the zip asset bundle wrapper.");
         }
     } catch (e) {
-        Log.err("[MyMod] Failed to load external bundle strings: " + e);
+        Log.err("[MyMod] Failed to execute zip asset stream loader: " + e);
     }
 });
