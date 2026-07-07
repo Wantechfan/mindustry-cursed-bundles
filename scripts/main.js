@@ -1,26 +1,39 @@
-Events.on(ClientLoadEvent, () => {
+Events.on(ClientLoadEvent, function() {
     try {
-        // 1. Get the game's safe root folder directory path as a pure Java string
-        let baseDir = String(Core.settings.getDataDirectory().path());
-        
-        // 2. Build the exact folder path directly using pure strings
-        // This completely skips using targetMod.file and shuts up the R8 optimizer error
-        let jsonPath = baseDir + "/mods/cursed-bundles.zip/othermodbundle.json";
+        var modsList = Vars.mods.list();
+        var myMod = null;
 
-        // 3. Read it via the safe internal engine asset manager
-        let rawContent = Core.files.internal(jsonPath).readString("UTF-8");
-        let jsonString = String(rawContent);
+        // Use a strict classic loop to find the mod
+        for (var i = 0; i < modsList.size(); i++) {
+            var m = modsList.get(i);
+            if (m.name != null && (m.name + "").toLowerCase().indexOf("cursed-bundles") !== -1) {
+                myMod = m;
+                break;
+            }
+        }
 
-        // 4. Parse and inject
-        let json = JSON.parse(jsonString);
-        let properties = Core.bundle.getProperties();
+        if (myMod == null) {
+            Log.err("[MyMod] Could not dynamically find the mod folder.");
+            return;
+        }
 
-        Object.keys(json).forEach(key => {
-            properties.put(key, json[key]);
-        });
+        // Read the string directly from the mod's virtual zip file pointer
+        var rawContent = myMod.file.child("othermodbundle.json").readString();
+        var jsonString = rawContent + ""; // Force it to a pure JS string primitive safely
 
-        Log.info("[MyMod] Success! Bundle strings loaded with zero Java object wrappers.");
+        // Parse the JSON data
+        var json = JSON.parse(jsonString);
+        var properties = Core.bundle.getProperties();
+
+        // Use a classic for...in loop (ES5) to inject keys safely without optimization crashes
+        for (var key in json) {
+            if (json.hasOwnProperty(key)) {
+                properties.put(key, json[key]);
+            }
+        }
+
+        Log.info("[MyMod] Success! Bundle strings loaded safely via ES5 ZipFi.");
     } catch (e) {
-        Log.err("[MyMod] Safe hardcoded loader caught an exception: " + e);
+        Log.err("[MyMod] ES5 Loader caught an exception: " + e);
     }
 });
