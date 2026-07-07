@@ -1,7 +1,5 @@
 Events.on(ClientLoadEvent, function() {
     try {
-        // 1. Fetch the mod directly by its internal ID string.
-        // No loops, no .size(), no .get(i) to confuse the engine!
         var myMod = Vars.mods.getMod("cursed-bundles");
 
         if (myMod == null) {
@@ -9,11 +7,11 @@ Events.on(ClientLoadEvent, function() {
             return;
         }
 
-        // 2. Read the file string cleanly using an all-Java approach
-        var jsonFile = myMod.file.child("othermodbundle.json");
+        // Fix: Navigate relative to mainFile (scripts/main.js) to stay inside the virtual zip system
+        // mainFile points to "scripts/main.js", so parent().parent() drops us perfectly in the root next to your JSON
+        var jsonFile = myMod.mainFile.parent().parent().child("othermodbundle.json");
         var jsonString = jsonFile.readString() + "";
 
-        // 3. Parse the JSON using a clean standard loop
         var json = JSON.parse(jsonString);
         var properties = Core.bundle.getProperties();
 
@@ -23,7 +21,7 @@ Events.on(ClientLoadEvent, function() {
             }
         }
 
-        Log.info("[MyMod] Bundle strings successfully loaded!");
+        Log.info("[MyMod] Bundle strings successfully loaded from ZipFi!");
     } catch (e) {
         Log.err("[MyMod] Loader caught a runtime exception: " + e);
     }
