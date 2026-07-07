@@ -88,6 +88,13 @@ Events.on(ClientLoadEvent, function() {
                     if (fieldType === "name") sector.localizedName = value;
                     if (fieldType === "description") sector.description = value;
                 }
+            } else if (typeStr === "status") {
+                // Look up status effects globally by their internal name
+                var status = Vars.content.getByName(ContentType.status, contentName);
+                if (status != null) {
+                    if (fieldType === "name") status.localizedName = value;
+                    if (fieldType === "description") status.description = value;
+                }
             }
         }
         Log.info("[MyMod] Success! Hijacked text bundles applied directly to live objects.");
