@@ -8,16 +8,12 @@ Events.on(ClientLoadEvent, () => {
             return;
         }
 
-        // 2. Open a direct input stream to the file inside the ZIP archive using the mod's classloader
-        let stream = myMod.loader.getResourceAsStream("othermodbundle.json");
+        // 2. Read the file content directly using the mod's virtual root file pointer
+        // Mindustry's ZipFi handles zipped contents seamlessly via readString()
+        let jsonString = myMod.file.child("othermodbundle.json").readString();
 
-        if (stream != null) {
-            // 3. Convert the stream to a string
-            let scanner = new java.util.Scanner(stream, "UTF-8").useDelimiter("\\A");
-            let jsonString = scanner.hasNext() ? scanner.next() : "";
-            stream.close(); // Clean up memory
-
-            // 4. Parse JSON and inject into game strings
+        if (jsonString && jsonString.trim().length() > 0) {
+            // 3. Parse JSON and inject into game strings
             let json = JSON.parse(jsonString);
             let properties = Core.bundle.getProperties();
 
@@ -25,11 +21,11 @@ Events.on(ClientLoadEvent, () => {
                 properties.put(key, json[key]);
             });
 
-            Log.info("[MyMod] Successfully loaded and injected bundle strings from ZIP stream!");
+            Log.info("[MyMod] Successfully loaded and injected bundle strings from ZipFi!");
         } else {
-            Log.err("[MyMod] Could not find 'othermodbundle.json' inside the zip asset bundle wrapper.");
+            Log.err("[MyMod] The bundle file was empty or unreadable.");
         }
     } catch (e) {
-        Log.err("[MyMod] Failed to execute zip asset stream loader: " + e);
+        Log.err("[MyMod] Failed to read internal zip data: " + e);
     }
 });
