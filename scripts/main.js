@@ -16,23 +16,21 @@ Events.on(ClientLoadEvent, function() {
             return;
         }
 
-        // Fix: Read the entire stream at once using the game's internal Streams utility
-        var fileHandle = myMod.file.child("othermodbundle.json");
-        var inputStream = fileHandle.read(); 
-        var jsonString = arc.util.io.Streams.copyString(inputStream) + ""; 
-
-        // Parse and inject
-        var json = JSON.parse(jsonString);
+        // Fix: Use Mindustry's Jval system parser directly on the file object
+        // Jval handles internal ZipFi conversion natively in Java, avoiding JS layer bugs
+        var jvalObj = arc.util.serialization.Jval.read(myMod.file.child("othermodbundle.json").readString());
         var properties = Core.bundle.getProperties();
 
-        for (var key in json) {
-            if (json.hasOwnProperty(key)) {
-                properties.put(key, json[key]);
-            }
+        // Use Jval's native keys iterator instead of JS loops
+        var keys = jvalObj.keys();
+        while(keys.hasNext()) {
+            var key = keys.next() + "";
+            var value = jvalObj.getString(key, "") + "";
+            properties.put(key, value);
         }
 
-        Log.info("[MyMod] Bundle strings successfully loaded!");
+        Log.info("[MyMod] Bundle strings successfully loaded via Jval!");
     } catch (e) {
-        Log.err("[MyMod] Loader caught an exception: " + e);
+        Log.err("[MyMod] Jval Loader caught an exception: " + e);
     }
 });
