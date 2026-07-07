@@ -89,11 +89,11 @@ Events.on(ClientLoadEvent, function() {
                     if (fieldType === "description") sector.description = value;
                 }
             } else if (typeStr === "status") {
-                // Look up status effects globally by their internal name
                 var status = Vars.content.getByName(ContentType.status, contentName);
                 if (status != null) {
                     if (fieldType === "name") status.localizedName = value;
                     if (fieldType === "description") status.description = value;
+                    if (fieldType === "details") status.details = value; // Add this line!
                 }
             }
         }
