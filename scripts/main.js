@@ -57,7 +57,7 @@ Events.on(ClientLoadEvent, function() {
             var contentName = parts[1]; // "asthosus-asthosus"
             var fieldType = parts[2];   // "name", "description", "details"
 
-            // Match string types to Mindustry content lookups
+                        // Match string types to Mindustry content lookups
             if (typeStr === "item") {
                 var item = Vars.content.getByName(ContentType.item, contentName);
                 if (item != null) {
@@ -77,22 +77,20 @@ Events.on(ClientLoadEvent, function() {
                     if (fieldType === "description") liquid.description = value;
                 }
             } else if (typeStr === "planet") {
-                // Planets reside in their own registry
                 var planet = Vars.content.getByName(ContentType.planet, contentName);
                 if (planet != null) {
                     if (fieldType === "name") planet.localizedName = value;
                     if (fieldType === "description") planet.description = value;
                 }
             } else if (typeStr === "sector") {
-                // Sectors are bound to planets; look through all registered sectors
-                var sector = Vars.content.getByShortName(contentName);
+                // Correct way to look up a sector globally by its internal name
+                var sector = Vars.content.getByName(ContentType.sector, contentName);
                 if (sector != null) {
                     if (fieldType === "name") sector.localizedName = value;
                     if (fieldType === "description") sector.description = value;
                 }
             }
         }
-
         Log.info("[MyMod] Success! Hijacked text bundles applied directly to live objects.");
     } catch (e) {
         Log.err("[MyMod] Dynamic Zip Loader caught an exception: " + e);
