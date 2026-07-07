@@ -1,0 +1,43 @@
+name: Sync Bundle Properties
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'bundles/bundle.properties'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          path: main-branch
+
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: usable-for-apple
+          path: target-branch
+
+      - name: Copy file and push changes
+        run: |
+          # Copy the updated file from main to the target branch directory
+          cp main-branch/bundles/bundle.properties target-branch/bundles/bundle.properties
+          
+          cd target-branch
+          
+          # Configure Git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@://github.com"
+          
+          # Check if there are actual changes to commit
+          if ! git diff --quiet; then
+            git add bundles/bundle.properties
+            git commit -m "chore: automatically sync bundle.properties from main"
+            git push origin HEAD
+          else
+            echo "No changes detected in bundle.properties"
+          fi
