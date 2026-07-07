@@ -44,20 +44,20 @@ Events.on(ClientLoadEvent, function() {
         for (var key in json) {
             if (!Object.prototype.hasOwnProperty.call(json, key)) continue;
 
-            var value = json[key] + "";
+            // Fix literal '\n' text strings into real line breaks
+            var value = (json[key] + "").replace(/\\n/g, "\n");
             
-            // Layer A: Push to global bundle (fixes UI labels, descriptions, and delayed text calls)
+            // Layer A: Push to global bundle
             properties.put(key + "", value);
 
-            // Layer B: Direct Asset Mutation (fixes already-baked map/item/planet names)
-            var parts = key.split("."); // e.g., ["planet", "asthosus-asthosus", "name"]
+            // Layer B: Direct Asset Mutation
+            var parts = key.split(".");
             if (parts.length < 3) continue;
 
-            var typeStr = parts[0];     // "planet", "sector", "item", "block", "liquid"
-            var contentName = parts[1]; // "asthosus-asthosus"
-            var fieldType = parts[2];   // "name", "description", "details"
+            var typeStr = parts[0];     
+            var contentName = parts[1]; 
+            var fieldType = parts[2];   
 
-                        // Match string types to Mindustry content lookups
             if (typeStr === "item") {
                 var item = Vars.content.getByName(ContentType.item, contentName);
                 if (item != null) {
@@ -83,7 +83,6 @@ Events.on(ClientLoadEvent, function() {
                     if (fieldType === "description") planet.description = value;
                 }
             } else if (typeStr === "sector") {
-                // Correct way to look up a sector globally by its internal name
                 var sector = Vars.content.getByName(ContentType.sector, contentName);
                 if (sector != null) {
                     if (fieldType === "name") sector.localizedName = value;
