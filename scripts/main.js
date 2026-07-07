@@ -16,18 +16,12 @@ Events.on(ClientLoadEvent, function() {
             return;
         }
 
-        // Fix: Use the standard game asset loader reader stream directly
+        // Fix: Read the entire stream at once using the game's internal Streams utility
         var fileHandle = myMod.file.child("othermodbundle.json");
-        var reader = new java.io.BufferedReader(fileHandle.reader());
-        var sb = new java.lang.StringBuilder();
-        var line;
-        
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
-        reader.close();
+        var inputStream = fileHandle.read(); 
+        var jsonString = arc.util.io.Streams.copyString(inputStream) + ""; 
 
-        var jsonString = sb.toString() + "";
+        // Parse and inject
         var json = JSON.parse(jsonString);
         var properties = Core.bundle.getProperties();
 
