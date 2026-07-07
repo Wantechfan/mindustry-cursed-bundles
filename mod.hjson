@@ -1,7 +1,7 @@
 name: "cursed-bundles"
 displayName: "Cursed Bundles"
 author: "WantechFan"
-description: "Changes every text ingame with cursed ones. Hand made by me. Please leave a star in my repository (by clicking the repo button) if you like the mod.\n\nThis mod is also modifiy ID bundle. If you want to make a cursed bundles on your language, [accent[]]click repo and start a pull request[[]]."
+description: "Changes every text ingame with cursed ones. Hand made by me. Please leave a star in my repository (by clicking the repo button) if you like the mod.\n\nThis mod also modifies ID bundle. If you want to make a cursed bundles on your language, [accent[]]click repo and start a pull request\n\nNote: If you're using iPhone or smth like that, download the mod from https://github.com/Wantechfan/mindustry-cursed-bundles/tree/usable-for-apple as the main mod uses scripts to modify other mod's texts.[[]]."
 version: "1.13"
 minGameVersion: "136"
 hidden: true
