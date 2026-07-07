@@ -7,9 +7,8 @@ Events.on(ClientLoadEvent, function() {
             return;
         }
 
-        // Fix: Navigate relative to mainFile (scripts/main.js) to stay inside the virtual zip system
-        // mainFile points to "scripts/main.js", so parent().parent() drops us perfectly in the root next to your JSON
-        var jsonFile = myMod.mainFile.parent().parent().child("othermodbundle.json");
+        // Now that the engine loop bug is gone, ZipFi child reading will work natively
+        var jsonFile = myMod.file.child("othermodbundle.json");
         var jsonString = jsonFile.readString() + "";
 
         var json = JSON.parse(jsonString);
@@ -21,7 +20,7 @@ Events.on(ClientLoadEvent, function() {
             }
         }
 
-        Log.info("[MyMod] Bundle strings successfully loaded from ZipFi!");
+        Log.info("[MyMod] Bundle strings successfully loaded!");
     } catch (e) {
         Log.err("[MyMod] Loader caught a runtime exception: " + e);
     }
