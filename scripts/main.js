@@ -1,19 +1,33 @@
 Events.on(ClientLoadEvent, () => {
     try {
-        // Find your mod reference securely
-        let myMod = Vars.mods.list().find(m => m.mainFile && m.mainFile.path().toLowerCase().includes("cursed-bundles"));
+        // 1. Get the mod list array from the game engine
+        let modsList = Vars.mods.list();
+        let targetMod = null;
 
-        if (!myMod) {
-            Log.err("[MyMod] Could not dynamically find the mod folder.");
+        // 2. Loop through using a native Java primitive integer loop to avoid iterator proxy crashes
+        for (let i = 0; i < modsList.size(); i++) {
+            let m = modsList.get(i);
+            // Use standard Java string comparison instead of file paths
+            if (m.name != null && String(m.name).toLowerCase().indexOf("cursed-bundles") !== -1) {
+                targetMod = m;
+                break;
+            }
+        }
+
+        if (targetMod == null) {
+            Log.err("[MyMod] Could not find the mod entry in the system list.");
             return;
         }
 
-        // Fix: Read the file strictly using Mindustry's global safe asset stream
-        // This converts the data directly into a safe String array structure
-        let lines = Core.files.internal(myMod.file.path() + "/othermodbundle.json").readString("UTF-8");
-        let jsonString = String(lines);
+        // 3. Force the path to a pure primitive JS string using template literals
+        // This avoids touching any underlying file object methods directly
+        let jsonPath = `${targetMod.file.path()}/othermodbundle.json`;
 
-        // Parse and inject
+        // 4. Safely read the string directly from Mindustry's engine asset manager using a safe hardcoded path string
+        let rawContent = Core.files.internal(jsonPath).readString("UTF-8");
+        let jsonString = String(rawContent);
+
+        // 5. Parse and push keys into Core.bundle
         let json = JSON.parse(jsonString);
         let properties = Core.bundle.getProperties();
 
@@ -21,8 +35,8 @@ Events.on(ClientLoadEvent, () => {
             properties.put(key, json[key]);
         });
 
-        Log.info("[MyMod] Bundle strings successfully loaded!");
+        Log.info("[MyMod] Bundle strings successfully loaded directly from engine!");
     } catch (e) {
-        Log.err("[MyMod] Safe bundle loader caught an exception: " + e);
+        Log.err("[MyMod] Loader caught a runtime exception: " + e);
     }
 });
