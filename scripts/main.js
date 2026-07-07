@@ -9,32 +9,35 @@ Events.on(ClientLoadEvent, function() {
 
         var zipFilePath = myMod.file.absolutePath();
         var zipFile = new java.util.zip.ZipFile(zipFilePath);
-        
-        // Let's print out EVERYTHING inside your zip file to see its layout
-        Log.info("--- LISTING ZIP CONTENTS ---");
+        var targetEntry = null;
+
+        // 1. Scan the archive to find the file regardless of the GitHub folder name
         var entries = zipFile.entries();
         while (entries.hasMoreElements()) {
             var entry = entries.nextElement();
-            Log.info("Found file inside ZIP: '" + entry.getName() + "'");
+            var entryName = entry.getName() + "";
+            
+            if (entryName.indexOf("othermodbundle.json") !== -1) {
+                targetEntry = entry;
+                break;
+            }
         }
-        Log.info("----------------------------");
 
-        // Try reading it again
-        var zipEntry = zipFile.getEntry("othermodbundle.json");
-
-        if (zipEntry == null) {
-            Log.err("[MyMod] 'othermodbundle.json' not found inside the zip root. Check the 'Found file inside ZIP' list above to see why!");
+        if (targetEntry == null) {
+            Log.err("[MyMod] Could not find 'othermodbundle.json' anywhere inside the zip file.");
             zipFile.close();
             return;
         }
 
-        var inputStream = zipFile.getInputStream(zipEntry);
+        // 2. Extract and stream the text content
+        var inputStream = zipFile.getInputStream(targetEntry);
         var scanner = new java.util.Scanner(inputStream, "UTF-8").useDelimiter("\\A");
         var jsonString = scanner.hasNext() ? scanner.next() : "";
         
         inputStream.close();
         zipFile.close();
 
+        // 3. Inject keys into the live game database
         var json = JSON.parse(jsonString + "");
         var properties = Core.bundle.getProperties();
 
@@ -44,8 +47,8 @@ Events.on(ClientLoadEvent, function() {
             }
         }
 
-        Log.info("[MyMod] Bundle strings successfully extracted!");
+        Log.info("[MyMod] Success! Bundle strings safely extracted from nested GitHub folder.");
     } catch (e) {
-        Log.err("[MyMod] Native Zip Loader caught an exception: " + e);
+        Log.err("[MyMod] Dynamic Zip Loader caught an exception: " + e);
     }
 });
