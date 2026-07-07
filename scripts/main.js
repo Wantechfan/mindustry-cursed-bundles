@@ -8,8 +8,7 @@ Events.on(ClientLoadEvent, () => {
             return;
         }
 
-        // ALTERNATIVE TARGETING: Use the main script file's parent directory
-        // m.mainFile points to scripts/main.js, so parent().parent() brings us back to the root folder.
+        // Safe zip asset loading method
         let jsonFile = myMod.mainFile.parent().parent().child("othermodbundle.json");
 
         if (jsonFile.exists()) {
@@ -21,10 +20,9 @@ Events.on(ClientLoadEvent, () => {
                 properties.put(key, json[key]);
             });
 
-            Log.info("[MyMod] Successfully injected external bundle strings.");
+            Log.info("[MyMod] Successfully injected external bundle strings from ZIP asset!");
         } else {
-            // Debug log to output EXACTLY where it is searching on your phone
-            Log.err("[MyMod] Missing file. Searched location: " + jsonFile.absolutePath());
+            Log.err("[MyMod] File not found inside zip context registry.");
         }
     } catch (e) {
         Log.err("[MyMod] Failed to load external bundle strings: " + e);
