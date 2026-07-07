@@ -1,5 +1,6 @@
 Events.on(ClientLoadEvent, () => {
     try {
+        // 1. Safely grab your mod context
         let myMod = Vars.mods.list().find(m => m.mainFile && m.mainFile.path().toLowerCase().includes("cursed-bundles"));
 
         if (!myMod) {
@@ -7,22 +8,19 @@ Events.on(ClientLoadEvent, () => {
             return;
         }
 
-        let jsonFile = myMod.file.child("othermodbundle.json");
+        // 2. Read the file data and explicitly force it to a JavaScript String primitive
+        let rawJavaString = myMod.file.child("othermodbundle.json").readString();
+        let jsonString = String(rawJavaString);
 
-        // Use direct reading safely without the Java/JS string format conflict
-        if (jsonFile != null) {
-            let jsonString = jsonFile.readString();
-            
-            // Parse it directly
-            let json = JSON.parse(jsonString);
-            let properties = Core.bundle.getProperties();
+        // 3. Parse and inject into the game bundles
+        let json = JSON.parse(jsonString);
+        let properties = Core.bundle.getProperties();
 
-            Object.keys(json).forEach(key => {
-                properties.put(key, json[key]);
-            });
+        Object.keys(json).forEach(key => {
+            properties.put(key, json[key]);
+        });
 
-            Log.info("[MyMod] Successfully loaded and injected bundle strings from ZipFi!");
-        }
+        Log.info("[MyMod] Successfully loaded and injected bundle strings from ZipFi!");
     } catch (e) {
         Log.err("[MyMod] Failed to read internal zip data: " + e);
     }
