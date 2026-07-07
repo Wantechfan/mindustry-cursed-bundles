@@ -1,7 +1,7 @@
 Events.on(ClientLoadEvent, () => {
     try {
-        // Find the mod meta by looking for the one that owns this script file
-        let myMod = Vars.mods.list().find(m => m.mainFile.path().includes("cursed-bundles"));
+        // Safe check: ensure m.mainFile exists before calling .path()
+        let myMod = Vars.mods.list().find(m => m.mainFile && m.mainFile.path().includes("cursed-bundles"));
 
         if (!myMod) {
             Log.err("[MyMod] Could not dynamically find the mod folder.");
