@@ -1,33 +1,27 @@
 Events.on(ClientLoadEvent, () => {
     try {
-        // 1. Get the handle to your mod's directory using Vars.mods
-        // Replace "cursed-bundles" with your actual mod name if it's different in mod.json
-        let myMod = Vars.mods.getMod("cursed-bundles");
-        
-        if (myMod == null) {
-            Log.err("[MyMod] Could not find mod 'cursed-bundles' in mod list.");
+        // Find the mod meta by looking for the one that owns this script file
+        let myMod = Vars.mods.list().find(m => m.mainFile.path().includes("cursed-bundles"));
+
+        if (!myMod) {
+            Log.err("[MyMod] Could not dynamically find the mod folder.");
             return;
         }
 
-        // 2. Locate your JSON file inside your mod folder
         let jsonFile = myMod.file.child("othermodbundle.json");
 
         if (jsonFile.exists()) {
-            // 3. Read the file content as a string and parse it
             let jsonString = jsonFile.readString();
             let json = JSON.parse(jsonString);
-
-            // 4. Get the internal properties map from Mindustry's bundle
             let properties = Core.bundle.getProperties();
 
-            // 5. Loop through your JSON keys and inject/overwrite them
             Object.keys(json).forEach(key => {
                 properties.put(key, json[key]);
             });
 
             Log.info("[MyMod] Successfully injected external bundle strings.");
         } else {
-            Log.err("[MyMod] Could not find othermodbundle.json inside the mod folder.");
+            Log.err("[MyMod] Found mod folder, but othermodbundle.json is missing inside it.");
         }
     } catch (e) {
         Log.err("[MyMod] Failed to load external bundle strings: " + e);
