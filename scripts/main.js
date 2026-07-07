@@ -1,9 +1,14 @@
 Events.on(ClientLoadEvent, () => {
     try {
-        // 1. Get the handle to your mod's directory
-        // Replace "your-mod-name" with the actual "name" from your mod.json
-        let myMod = Mods.getMod("cursed-bundles");
+        // 1. Get the handle to your mod's directory using Vars.mods
+        // Replace "cursed-bundles" with your actual mod name if it's different in mod.json
+        let myMod = Vars.mods.getMod("cursed-bundles");
         
+        if (myMod == null) {
+            Log.err("[MyMod] Could not find mod 'cursed-bundles' in mod list.");
+            return;
+        }
+
         // 2. Locate your JSON file inside your mod folder
         let jsonFile = myMod.file.child("othermodbundle.json");
 
@@ -22,7 +27,7 @@ Events.on(ClientLoadEvent, () => {
 
             Log.info("[MyMod] Successfully injected external bundle strings.");
         } else {
-            Log.err("[MyMod] Could not find othermodbundle.json");
+            Log.err("[MyMod] Could not find othermodbundle.json inside the mod folder.");
         }
     } catch (e) {
         Log.err("[MyMod] Failed to load external bundle strings: " + e);
