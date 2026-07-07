@@ -11,7 +11,7 @@ Events.on(ClientLoadEvent, function() {
         var zipFile = new java.util.zip.ZipFile(zipFilePath);
         var targetEntry = null;
 
-        // 1. Scan the archive to find the file regardless of the GitHub folder name
+        // 1. Locate the JSON file inside the ZIP archive
         var entries = zipFile.entries();
         while (entries.hasMoreElements()) {
             var entry = entries.nextElement();
@@ -24,12 +24,12 @@ Events.on(ClientLoadEvent, function() {
         }
 
         if (targetEntry == null) {
-            Log.err("[MyMod] Could not find 'othermodbundle.json' anywhere inside the zip file.");
+            Log.err("[MyMod] Could not find 'othermodbundle.json' inside the zip file.");
             zipFile.close();
             return;
         }
 
-        // 2. Extract and stream the text content
+        // 2. Stream and parse JSON data
         var inputStream = zipFile.getInputStream(targetEntry);
         var scanner = new java.util.Scanner(inputStream, "UTF-8").useDelimiter("\\A");
         var jsonString = scanner.hasNext() ? scanner.next() : "";
@@ -37,17 +37,63 @@ Events.on(ClientLoadEvent, function() {
         inputStream.close();
         zipFile.close();
 
-        // 3. Inject keys into the live game database
         var json = JSON.parse(jsonString + "");
         var properties = Core.bundle.getProperties();
 
+        // 3. Dual-Layer Injection (Bundle Override + Live Content Mutator)
         for (var key in json) {
-            if (Object.prototype.hasOwnProperty.call(json, key)) {
-                properties.put(key + "", json[key] + "");
+            if (!Object.prototype.hasOwnProperty.call(json, key)) continue;
+
+            var value = json[key] + "";
+            
+            // Layer A: Push to global bundle (fixes UI labels, descriptions, and delayed text calls)
+            properties.put(key + "", value);
+
+            // Layer B: Direct Asset Mutation (fixes already-baked map/item/planet names)
+            var parts = key.split("."); // e.g., ["planet", "asthosus-asthosus", "name"]
+            if (parts.length < 3) continue;
+
+            var typeStr = parts[0];     // "planet", "sector", "item", "block", "liquid"
+            var contentName = parts[1]; // "asthosus-asthosus"
+            var fieldType = parts[2];   // "name", "description", "details"
+
+            // Match string types to Mindustry content lookups
+            if (typeStr === "item") {
+                var item = Vars.content.getByName(ContentType.item, contentName);
+                if (item != null) {
+                    if (fieldType === "name") item.localizedName = value;
+                    if (fieldType === "description") item.description = value;
+                }
+            } else if (typeStr === "block") {
+                var block = Vars.content.getByName(ContentType.block, contentName);
+                if (block != null) {
+                    if (fieldType === "name") block.localizedName = value;
+                    if (fieldType === "description") block.description = value;
+                }
+            } else if (typeStr === "liquid") {
+                var liquid = Vars.content.getByName(ContentType.liquid, contentName);
+                if (liquid != null) {
+                    if (fieldType === "name") liquid.localizedName = value;
+                    if (fieldType === "description") liquid.description = value;
+                }
+            } else if (typeStr === "planet") {
+                // Planets reside in their own registry
+                var planet = Vars.content.getByName(ContentType.planet, contentName);
+                if (planet != null) {
+                    if (fieldType === "name") planet.localizedName = value;
+                    if (fieldType === "description") planet.description = value;
+                }
+            } else if (typeStr === "sector") {
+                // Sectors are bound to planets; look through all registered sectors
+                var sector = Vars.content.getByShortName(contentName);
+                if (sector != null) {
+                    if (fieldType === "name") sector.localizedName = value;
+                    if (fieldType === "description") sector.description = value;
+                }
             }
         }
 
-        Log.info("[MyMod] Success! Bundle strings safely extracted from nested GitHub folder.");
+        Log.info("[MyMod] Success! Hijacked text bundles applied directly to live objects.");
     } catch (e) {
         Log.err("[MyMod] Dynamic Zip Loader caught an exception: " + e);
     }
